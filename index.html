@@ -3,103 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Trade Republic Pro Manager</title>
+    <title>TR Manager Pro Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000; overflow-x: hidden; }
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 1.5rem; }
+        .glass-nav { background: rgba(10, 10, 10, 0.8); backdrop-filter: blur(20px); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; transition: all 0.3s; opacity: 0.4; }
+        .nav-active { opacity: 1; color: #3b82f6; transform: translateY(-5px); }
+        
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 10px; }
+        input[type=range]::-webkit-slider-thumb { height: 18px; width: 18px; border-radius: 50%; background: #3b82f6; cursor: pointer; -webkit-appearance: none; margin-top: -6px; border: 2px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    </style>
 </head>
-<body class="text-white pb-24">
+<body class="text-white pb-32">
 
-    <div class="fixed inset-0 -z-10 bg-black">
-        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 blur-[120px] rounded-full"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full"></div>
-    </div>
-
-    <header class="p-6 flex justify-between items-center">
-        <div>
-            <p class="text-gray-400 text-xs uppercase tracking-widest">Patrimonio Totale</p>
-            <h1 id="total-balance" class="text-4xl font-extrabold mt-1">€ 0.00</h1>
-            <div id="total-pnl" class="inline-flex items-center px-2 py-1 rounded-full bg-green-500/10 text-green-400 text-[10px] font-bold mt-2">
-                + € 0.00 (0.00%)
+    <div id="notification-toast" class="fixed top-6 left-4 right-4 z-[200] transform -translate-y-32 transition-transform duration-500">
+        <div class="glass-card p-4 border-l-4 border-blue-500 flex items-center shadow-2xl bg-black/90">
+            <span class="text-2xl mr-3" id="notif-icon">🔔</span>
+            <div>
+                <p id="notif-title" class="font-black text-[10px] uppercase tracking-widest text-blue-400">Sistema</p>
+                <p id="notif-msg" class="text-sm font-medium italic"></p>
             </div>
         </div>
-        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center border border-white/20 shadow-lg">
-            <span class="font-bold">TR</span>
+    </div>
+
+    <div class="fixed inset-0 -z-10 bg-black">
+        <div class="absolute top-[-10%] left-[-10%] w-[60%] h-[50%] bg-blue-900/20 blur-[130px] rounded-full"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[50%] bg-blue-600/10 blur-[130px] rounded-full"></div>
+    </div>
+
+    <header class="p-6 flex justify-between items-end">
+        <div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-widest font-bold">Patrimonio Totale (Lordo)</p>
+            <h1 id="total-balance" class="text-4xl font-extrabold mt-1 tracking-tighter italic">€ 0,00</h1>
+            <div id="stat-profitto" class="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold mt-2 bg-white/5 italic">
+                € 0,00 (0,00%)
+            </div>
+        </div>
+        <div class="text-right">
+            <p class="text-gray-500 text-[10px] uppercase font-bold text-blue-400">Netto Reale (Post-Tasse)</p>
+            <p id="net-balance" class="text-xl font-black text-white italic">€ 0,00</p>
         </div>
     </header>
 
     <section id="tab-main" class="tab-content active px-4">
-        <div id="alerts-container" class="mb-4 space-y-2"></div>
-
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="glass-card p-4">
-                <p class="text-gray-500 text-[10px] uppercase font-bold">Investito</p>
-                <p id="total-invested" class="text-lg font-semibold">€ 0.00</p>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <div class="glass-card p-3 text-center">
+                <p class="text-[8px] text-gray-400 uppercase font-bold">Capital Gain Accantonato</p>
+                <p id="tax-bollo" class="text-lg font-black text-orange-400 italic">€ 0,00</p>
             </div>
-            <div class="glass-card p-4 border-l-2 border-l-blue-500">
-                <p class="text-gray-500 text-[10px] uppercase font-bold">Cash (2%)</p>
-                <p id="cash-mini" class="text-lg font-semibold text-blue-400">€ 0.00</p>
+            <div class="glass-card p-3 text-center">
+                <p class="text-[8px] text-gray-400 uppercase font-bold">Capitale Versato</p>
+                <p id="stat-investito" class="text-lg font-black text-blue-400 italic">€ 0,00</p>
             </div>
         </div>
 
-        <div class="glass-card p-5 mb-6">
-            <h3 class="text-sm font-bold mb-4 text-gray-300 uppercase tracking-wider">Allocazione Asset</h3>
-            <div class="h-56"><canvas id="mainChart"></canvas></div>
+        <div class="glass-card p-5 mb-6 relative">
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-4 text-center">Andamento Versamenti</p>
+            <div class="relative h-44 w-full"> 
+                <canvas id="performanceChart"></canvas>
+            </div>
         </div>
 
-        <div class="glass-card p-5 mb-6">
+        <div class="glass-card p-5 mb-6 text-center">
             <div class="flex justify-between items-end mb-3">
-                <h3 class="text-sm font-bold text-gray-300">Target 10.000€</h3>
+                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-tighter italic">Obiettivo <span id="display-target-goal">...</span>€</h3>
                 <span id="target-percentage" class="text-xl font-black text-blue-500">0%</span>
             </div>
-            <div class="w-full bg-white/5 rounded-full h-3 overflow-hidden border border-white/10">
-                <div id="target-bar" class="bg-gradient-to-r from-blue-600 to-cyan-400 h-full transition-all duration-1000" style="width: 0%"></div>
+            <div class="w-full bg-white/5 rounded-full h-2.5 overflow-hidden relative">
+                <div id="target-bar" class="bg-blue-500 h-full transition-all duration-1000"></div>
             </div>
         </div>
 
-        <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-[2rem] shadow-xl relative overflow-hidden">
-            <div class="relative z-10">
-                <h3 class="text-lg font-bold mb-4">Investimento Mensile</h3>
+        <div class="bg-gradient-to-br from-blue-600 to-blue-900 p-6 rounded-[2.5rem] shadow-2xl mb-8">
+            <h3 class="text-lg font-bold mb-4 italic uppercase tracking-tighter text-white">Versamento Smart</h3>
+            <div class="space-y-4">
+                <input type="month" id="budget-date" class="bg-white/10 border border-white/20 rounded-xl p-4 w-full text-white outline-none font-bold">
+                
                 <div class="flex gap-2">
-                    <input type="number" id="budget-input" value="350" class="bg-white/10 border border-white/20 rounded-xl p-3 w-full text-white outline-none">
-                    <button onclick="distributeBudget()" class="bg-white text-blue-800 px-6 py-3 rounded-xl font-black">VAI</button>
+                    <input type="number" id="budget-input" placeholder="Importo Totale €" class="bg-white/10 border border-white/20 rounded-xl p-4 w-full text-white outline-none font-bold placeholder:text-white/40">
+                    <button onclick="distributeBudget()" class="bg-white text-blue-900 px-8 py-4 rounded-xl font-black active:scale-95 transition-all uppercase tracking-tighter shadow-xl">Versa</button>
+                </div>
+
+                <div id="allocation-controls" class="hidden space-y-5 bg-black/40 p-5 rounded-3xl border border-white/10 mt-2">
+                    <p class="text-[9px] font-black uppercase text-blue-300 tracking-[0.2em] mb-4 text-center italic">Ripartizione Personalizzata</p>
+                    
+                    <div id="allocation-sliders-container" class="space-y-5">
+                        </div>
                 </div>
             </div>
         </div>
     </section>
 
     <section id="tab-etf" class="tab-content px-4">
-        <h2 class="text-2xl font-bold mb-6">Dettaglio ETF</h2>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black uppercase tracking-tight italic">Asset & Mercati</h2>
+            <div id="market-status" class="text-[9px] px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/30 text-blue-400 font-bold uppercase tracking-widest">Live 🟢</div>
+        </div>
+        
+        <div class="glass-card p-6 mb-6 border-t-4 border-t-orange-500 text-center">
+            <p class="text-gray-500 text-[10px] font-bold uppercase mb-1">Potenziale Interessi Cash (2%)</p>
+            <h2 id="annual-interest" class="text-4xl font-black italic">€ 0,00</h2>
+            <p class="text-[8px] text-gray-500 uppercase mt-2 tracking-widest">Basato sulla liquidità non investita</p>
+        </div>
+
         <div id="etf-list" class="space-y-4"></div>
     </section>
 
-    <section id="tab-cash" class="tab-content px-4">
-        <div class="glass-card p-6 mb-6 text-center">
-            <p class="text-blue-400 text-xs font-bold uppercase mb-2">Interessi Maturati (Stima Annua)</p>
-            <h2 id="annual-interest" class="text-4xl font-black">€ 0.00</h2>
-        </div>
-        <div class="glass-card p-5 mb-6">
-            <label class="block text-xs text-gray-500 uppercase font-bold mb-3">Capitale Iniziale Cash</label>
-            <input type="number" id="initial-cash" placeholder="Esempio: 2000" class="bg-white/5 border border-white/10 rounded-xl p-3 w-full mb-3 outline-none">
-            <button onclick="setInitialCash()" class="w-full bg-blue-600 py-3 rounded-xl font-bold">Aggiorna Saldo</button>
-        </div>
-        <button onclick="resetAllData()" class="w-full text-red-500 text-xs font-bold opacity-50 hover:opacity-100 transition-opacity">RESETTA TUTTI I DATI</button>
+    <section id="tab-history" class="tab-content px-4">
+        <h2 class="text-2xl font-black mb-6 uppercase tracking-tight italic">Cronologia</h2>
+        <div id="history-page-list" class="space-y-3"></div>
     </section>
 
     <section id="tab-forecast" class="tab-content px-4">
-        <h2 class="text-2xl font-bold mb-2">Previsioni</h2>
-        <p class="text-gray-500 text-sm mb-6">Crescita stimata a 10 anni (ETF 6% + Cash 2%)</p>
-        <div class="glass-card p-4 h-80">
-            <canvas id="forecastChart"></canvas>
+        <h2 class="text-2xl font-black mb-2 uppercase tracking-tight italic">Proiezioni PAC</h2>
+        
+        <div class="glass-card p-5 mb-4 space-y-6">
+            <div>
+                <div class="flex justify-between text-[10px] mb-2 font-bold italic">
+                    <span class="text-gray-400">VERSAMENTO MENSILE</span>
+                    <span class="text-blue-400">€ <span id="val-range-monthly">500</span></span>
+                </div>
+                <input type="range" id="range-monthly" min="50" max="2000" step="50" value="500" oninput="updateForecast()" class="w-full">
+            </div>
+            
+            <div>
+                <div class="flex justify-between text-[10px] mb-2 font-bold italic">
+                    <span class="text-gray-400">DURATA (ANNI)</span>
+                    <span class="text-blue-400"><span id="val-range-years">10</span> Anni</span>
+                </div>
+                <input type="range" id="range-years" min="1" max="40" step="1" value="10" oninput="updateForecast()" class="w-full">
+            </div>
+    
+            <div>
+                <div class="flex justify-between text-[10px] mb-2 font-bold italic">
+                    <span class="text-gray-400">RENDIMENTO ANNUO ATTESO</span>
+                    <span class="text-blue-400"><span id="val-range-roi">7</span>%</span>
+                </div>
+                <input type="range" id="range-roi" min="1" max="15" step="0.5" value="7" oninput="updateForecast()" class="w-full">
+            </div>
+        </div>
+    
+        <div class="glass-card p-5 mb-6">
+            <div style="position: relative; height:250px; width:100%;">
+                <canvas id="forecastChart"></canvas>
+            </div>
+        </div>
+    
+        <div class="grid grid-cols-3 gap-2">
+             <div class="glass-card p-3 text-center">
+                <p class="text-[7px] text-gray-500 uppercase font-bold">Investito</p>
+                <p id="future-invested" class="text-xs font-black">€ 0</p>
+             </div>
+             <div class="glass-card p-3 text-center border-b-2 border-blue-500">
+                <p class="text-[7px] text-gray-500 uppercase font-bold">Patrimonio</p>
+                <p id="future-balance" class="text-xs font-black text-blue-400">€ 0</p>
+             </div>
+             <div class="glass-card p-3 text-center">
+                <p class="text-[7px] text-gray-500 uppercase font-bold">Interessi</p>
+                <p id="future-interests" class="text-xs font-black text-green-400">€ 0</p>
+             </div>
         </div>
     </section>
 
-    <nav class="fixed bottom-6 left-4 right-4 h-16 glass-nav rounded-2xl flex items-center justify-around z-[100]">
-        <button onclick="showTab('main')" id="btn-main" class="nav-btn nav-active">Home</button>
-        <button onclick="showTab('etf')" id="btn-etf" class="nav-btn">Asset</button>
-        <button onclick="showTab('cash')" id="btn-cash" class="nav-btn">Cash</button>
-        <button onclick="showTab('forecast')" id="btn-forecast" class="nav-btn">Future</button>
+    <section id="tab-cash" class="tab-content px-4">
+        <h2 class="text-2xl font-black mb-6 uppercase tracking-tight italic">Impostazioni</h2>
+        <div class="space-y-4">
+            <div class="glass-card p-6">
+                <label class="block text-[10px] text-gray-500 font-extrabold mb-3 italic uppercase tracking-widest">Budget Mensile Suggerito (€)</label>
+                <input type="number" id="set-budget" class="bg-white/5 border border-white/10 rounded-xl p-4 w-full text-xl font-bold outline-none focus:border-blue-500">
+            </div>
+
+            <div class="glass-card p-6">
+                <label class="block text-[10px] text-gray-500 font-extrabold mb-3 italic uppercase tracking-widest">Target Finale Portafoglio (€)</label>
+                <input type="number" id="target-goal-input" class="bg-white/5 border border-white/10 rounded-xl p-4 w-full text-xl font-bold outline-none focus:border-blue-500 mb-6">
+                <button onclick="saveAllSettings()" class="w-full bg-blue-600 py-4 rounded-2xl font-black uppercase shadow-lg active:scale-95 transition-all tracking-tighter">Salva Configurazioni</button>
+            </div>
+
+            <button onclick="resetAllData()" class="w-full mt-8 text-red-600 text-[10px] font-bold uppercase opacity-30 hover:opacity-100 transition-all">Svuota database locale</button>
+        </div>
+    </section>
+
+    <nav class="fixed bottom-6 left-4 right-4 h-20 glass-nav rounded-[2rem] flex items-center justify-around z-[100] px-2 shadow-2xl border border-white/10">
+        <button onclick="showTab('main')" id="btn-main" class="nav-btn nav-active"><span class="text-2xl mb-1">🏠</span><span class="text-[8px] font-black">HOME</span></button>
+        <button onclick="showTab('etf')" id="btn-etf" class="nav-btn"><span class="text-2xl mb-1">📊</span><span class="text-[8px] font-black">MARKET</span></button>
+        <button onclick="showTab('history')" id="btn-history" class="nav-btn"><span class="text-2xl mb-1">📜</span><span class="text-[8px] font-black">HISTORY</span></button>
+        <button onclick="showTab('forecast')" id="btn-forecast" class="nav-btn"><span class="text-2xl mb-1">🚀</span><span class="text-[8px] font-black">TARGET</span></button>
+        <button onclick="showTab('cash')" id="btn-cash" class="nav-btn"><span class="text-2xl mb-1">⚙️</span><span class="text-[8px] font-black">CONFIG</span></button>
     </nav>
 
     <script src="script.js"></script>

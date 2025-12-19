@@ -1,38 +1,74 @@
-/* Custom Styles */
+/* --- Configurazione Base e Tipografia --- */
 body {
     font-family: 'Inter', sans-serif;
     letter-spacing: -0.01em;
+    background-color: #000;
+    color: #fff;
     overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 100vh;
 }
 
-/* Effetto Vetro (Glassmorphism) */
+/* --- Effetto Vetro (Glassmorphism) Pro --- */
 .glass-card {
     background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 1.5rem;
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* --- Badge Profitto e Performance --- */
+#chart-profit-badge {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.text-green-400 {
+    color: #4ade80;
+    text-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+}
+
+.text-red-400 {
+    color: #f87171;
+    text-shadow: 0 0 15px rgba(248, 113, 113, 0.3);
+}
+
+/* --- Sistema di Notifiche (Toast) --- */
+#notification-toast {
+    pointer-events: none;
+}
+
+#notification-toast.active {
+    transform: translateY(0);
+}
+
+/* --- Navigazione Inferiore --- */
 .glass-nav {
-    background: rgba(15, 15, 15, 0.8);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
 }
 
-/* Bottoni Navigazione */
 .nav-btn {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #666;
+    color: #444;
     flex: 1;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
 }
 
 .nav-active {
     color: #3b82f6;
-    position: relative;
+    transform: translateY(-4px);
 }
 
 .nav-active::after {
@@ -43,25 +79,76 @@ body {
     height: 4px;
     background: #3b82f6;
     border-radius: 50%;
-    box-shadow: 0 0 10px #3b82f6;
+    box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
 }
 
-/* Animazioni Tab */
+/* --- Indicatori Prezzo e Trend --- */
+.price-badge {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.price-up { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.price-down { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+/* --- Animazioni --- */
 .tab-content {
     display: none;
-    animation: slideIn 0.4s ease-out;
+    animation: tabAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tab-content.active {
     display: block;
 }
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
-    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+@keyframes tabAppear {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Nascondi scrollbar per pulizia UI */
+/* Effetto pulsazione all'aggiornamento prezzi */
+.pulse-update {
+    animation: pulse-glow 1s ease-out;
+}
+
+@keyframes pulse-glow {
+    0% { filter: brightness(1); transform: scale(1); }
+    50% { filter: brightness(1.4); transform: scale(1.02); }
+    100% { filter: brightness(1); transform: scale(1); }
+}
+
+/* --- Barra Obiettivo con Effetto Shine --- */
+#target-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+#target-bar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shine 2.5s infinite;
+}
+
+@keyframes shine {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(100%); }
+}
+
+/* --- Utility --- */
 ::-webkit-scrollbar {
     display: none;
+}
+
+input:focus {
+    border-color: #3b82f6 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+button:active {
+    transform: scale(0.92);
 }
